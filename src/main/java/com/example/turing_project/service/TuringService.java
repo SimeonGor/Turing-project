@@ -1,7 +1,7 @@
 package com.example.turing_project.service;
 
-import com.example.turing_project.entity.Answer;
+import com.example.turing_project.dto.AnswerDto;
 
 public interface TuringService {
-    Answer handle(String request);
+    AnswerDto handle(String request);
 }
