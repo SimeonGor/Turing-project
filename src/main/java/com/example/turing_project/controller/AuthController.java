@@ -29,7 +29,6 @@ public class AuthController {
         if (employeeService.getEmployeeByEmail(employee.getEmail())!=null){
             return ResponseEntity.status(409).body("Conflict");
         }
-        // Хеширование пароля перед сохранением
         employee.setPassword(passwordEncoder.encode(employee.getPassword()));
         employeeService.save(employee);
         return ResponseEntity.ok("Registration successful");
@@ -38,14 +37,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginData) {
         try {
-            String username = loginData.get("username");
+            String email = loginData.get("email");
             String password = loginData.get("password");
-            Employee employee = employeeService.getEmployeeByUsername(username);
+            Employee employee = employeeService.getEmployeeByEmail(email);
 
             // Проверка пароля
             if (employee != null && passwordEncoder.matches(password, employee.getPassword())) {
                 // Генерация токена
-                String token = jwtTokenService.generateToken(username, password);
+                String token = jwtTokenService.generateToken(email, password);
                 Map<String, String> response = new HashMap<>();
                 response.put("token", token);
                 return ResponseEntity.ok(response);
@@ -56,4 +55,6 @@ public class AuthController {
             return ResponseEntity.status(500).body("Internal Server Error");
         }
     }
+
+
 }
