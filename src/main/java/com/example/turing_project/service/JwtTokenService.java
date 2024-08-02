@@ -16,6 +16,7 @@ import java.util.function.Function;
 
 @Service
 public class JwtTokenService {
+
     @Autowired
     private EmployeeService employeeService;
 
@@ -25,6 +26,9 @@ public class JwtTokenService {
         if (username == null || password == null)
             return null;
         Employee employee = employeeService.getEmployeeByUsername(username);
+        if (employee==null){
+            return null;
+        }
         Map<String, Object> tokenData = new HashMap<>();
         if (password.equals(employee.getPassword())) {
             tokenData.put("userID", employee.getId().toString());
@@ -40,7 +44,14 @@ public class JwtTokenService {
             throw new Exception("Authentication error");
         }
     }
-
+    public Boolean validateToken(String token) {
+        try {
+            final Claims claims = extractAllClaims(token);
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
