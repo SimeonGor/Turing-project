@@ -63,8 +63,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 UserDetails userDetails = new User(
                         employee.getEmail(),
-                        employee.getPassword(),  // Or use null if you do not need to revalidate the password
-                        new ArrayList<>() // Provide appropriate authorities if needed
+                        employee.getPassword(),
+                        new ArrayList<>()
                 );
 
                 Authentication authentication = new UsernamePasswordAuthenticationToken(

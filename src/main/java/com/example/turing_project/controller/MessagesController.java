@@ -4,11 +4,17 @@ import com.example.turing_project.dto.AnswerDto;
 import com.example.turing_project.dto.DialogDto;
 import com.example.turing_project.dto.MessageDto;
 import com.example.turing_project.dto.QuestionDto;
+import com.example.turing_project.entity.Employee;
+import com.example.turing_project.service.EmployeeService;
 import com.example.turing_project.service.HistoryService;
 import com.example.turing_project.service.TuringService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,6 +28,9 @@ import java.util.List;
 public class MessagesController {
     private final HistoryService historyService;
     private final TuringService turingService;
+    @Autowired
+    private EmployeeService employeeService;
+
 
     @GetMapping("messages/{messageId}")
     public MessageDto getMessage(@PathVariable Long messageId) {
@@ -60,4 +69,17 @@ public class MessagesController {
 
         return answer;
     }
+
+    private Employee getCurrentEmployee() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+            throw new RuntimeException("User not authenticated");
+
+        }
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String email = userDetails.getUsername();
+
+        return employeeService.getEmployeeByEmail(email);
+    }
+
 }
