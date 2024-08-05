@@ -4,10 +4,7 @@ import com.example.turing_project.dto.AnswerDto;
 import com.example.turing_project.dto.DialogDto;
 import com.example.turing_project.dto.MessageDto;
 import com.example.turing_project.dto.QuestionDto;
-import com.example.turing_project.entity.Answer;
-import com.example.turing_project.entity.Dialog;
-import com.example.turing_project.entity.Message;
-import com.example.turing_project.entity.Question;
+import com.example.turing_project.entity.*;
 import com.example.turing_project.repo.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,49 +59,56 @@ public class HistoryService {
         return question;
     }
 
-    public MessageDto getMessageById(Long id) {
+    public MessageDto getMessageById(Employee employee, Long id) {
         Optional<Message> messageOptional = messageRepo.findById(id);
         return messageOptional
-                .map(this::messageDtoMapper
-                )
+                .filter(message -> message.getDialog().getEmployee().getId().equals(employee.getId()))
+                .map(this::messageDtoMapper)
                 .orElse(null);
     }
 
-    public List<MessageDto> getDialogById(Long id) {
+    public List<MessageDto> getDialogById(Employee employee, Long id) {
         Optional<Dialog> optionalDialog = dialogRepo.findById(id);
         return optionalDialog
+                .filter(dialog -> dialog.getEmployee().getId().equals(employee.getId()))
                 .map(dialog ->
-                    dialog.getMessageList().stream().map(this::messageDtoMapper).toList()
-                ).orElse(null);
+                    dialog.getMessageList().stream().map(this::messageDtoMapper).toList())
+                .orElse(null);
     }
 
-    public List<DialogDto> getAllDialogs(Long userId) {
-        return dialogRepo.findAllByEmployee_Id(userId)
+    public List<DialogDto> getAllDialogs(Employee employee) {
+        return dialogRepo.findAllByEmployee_Id(employee.getId())
                 .stream().map(this::dialogDtoMapper).toList();
     }
 
-    // TODO: 01.08.2024 change userId to employee
-    public DialogDto createDialog(Long userId, String title) {
+    public DialogDto createDialog(Employee employee, String title) {
         Dialog dialog = new Dialog();
-        dialog.setEmployee(employeeRepo.findById(userId).get());
+        dialog.setEmployee(employee);
         dialog.setTitle(title);
 
         Dialog saved = dialogRepo.save(dialog);
         return dialogDtoMapper(saved);
     }
 
-    public void saveMessage(Long dialogId, QuestionDto questionDto, AnswerDto answerDto) {
+    public MessageDto saveMessage(Employee employee, Long dialogId, QuestionDto questionDto, AnswerDto answerDto) {
         Answer answer = answerMapper(answerDto);
         Question question = questionMapper(questionDto);
+
+        Optional<Dialog> optionalDialog = dialogRepo.findById(dialogId);
+        if (optionalDialog.filter(dialog -> dialog.getEmployee().getId().equals(employee.getId())).isEmpty()) {
+            return null;
+        }
 
         Message message = new Message();
         message.setAnswer(answer);
         message.setQuestion(question);
-        message.setDialog(dialogRepo.findById(dialogId).get());
+        message.setDialog(optionalDialog.get());
         message.setCreated(LocalDateTime.now());
 
         answerRepo.save(answer);
         questionRepo.save(question);
-        messageRepo.save(message);
+        Message saved = messageRepo.save(message);
+
+        return messageDtoMapper(saved);
     }
 }
