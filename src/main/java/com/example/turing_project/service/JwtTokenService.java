@@ -47,15 +47,20 @@ public class JwtTokenService {
 
     public boolean validateToken(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody() != null;
+            return getClaims(token) != null;
         } catch (Exception e) {
             return false;
         }
 
+    }
+
+    public Claims getClaims(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims;
     }
 
 }
