@@ -22,48 +22,11 @@ public class HistoryService {
     private final QuestionRepo questionRepo;
     private final DialogRepo dialogRepo;
 
-    private MessageDto messageDtoMapper(Message message) {
-        return MessageDto.builder()
-                .id(message.getId())
-                .created(message.getCreated())
-                .answer(AnswerDto.builder()
-                        .text(message.getAnswer().getText())
-                        .document(message.getAnswer().getDocument())
-                        .build()
-                )
-                .question(QuestionDto.builder()
-                        .text(message.getQuestion().getText())
-                        .build()
-                )
-                .build();
-    }
-
-    private DialogDto dialogDtoMapper(Dialog dialog) {
-        return DialogDto.builder()
-                .id(dialog.getId())
-                .title(dialog.getTitle())
-                .build();
-    }
-
-    private Answer answerMapper(AnswerDto answerDto) {
-        Answer answer = new Answer();
-        answer.setType("text");
-        answer.setDocument(answerDto.getDocument());
-        answer.setText(answerDto.getText());
-        return answer;
-    }
-
-    private Question questionMapper(QuestionDto questionDto) {
-        Question question = new Question();
-        question.setText(questionDto.getText());
-        return question;
-    }
-
     public MessageDto getMessageById(Employee employee, Long id) {
         Optional<Message> messageOptional = messageRepo.findById(id);
         return messageOptional
                 .filter(message -> message.getDialog().getEmployee().getId().equals(employee.getId()))
-                .map(this::messageDtoMapper)
+                .map(MessageDto::of)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Message with id %s not found".formatted(id))
                 );
@@ -74,7 +37,7 @@ public class HistoryService {
         return optionalDialog
                 .filter(dialog -> dialog.getEmployee().getId().equals(employee.getId()))
                 .map(dialog ->
-                    dialog.getMessageList().stream().map(this::messageDtoMapper).toList())
+                    dialog.getMessageList().stream().map(MessageDto::of).toList())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Dialog with id %s not found".formatted(id))
                 );
@@ -82,7 +45,7 @@ public class HistoryService {
 
     public List<DialogDto> getAllDialogs(Employee employee) {
         return dialogRepo.findAllByEmployee_Id(employee.getId())
-                .stream().map(this::dialogDtoMapper).toList();
+                .stream().map(DialogDto::of).toList();
     }
 
     public DialogDto createDialog(Employee employee, String title) {
@@ -91,12 +54,12 @@ public class HistoryService {
         dialog.setTitle(title);
 
         Dialog saved = dialogRepo.save(dialog);
-        return dialogDtoMapper(saved);
+        return DialogDto.of(saved);
     }
 
     public MessageDto saveMessage(Employee employee, Long dialogId, QuestionDto questionDto, AnswerDto answerDto) {
-        Answer answer = answerMapper(answerDto);
-        Question question = questionMapper(questionDto);
+        Answer answer = answerDto.toAnswer();
+        Question question = questionDto.toQuestion();
 
         Optional<Dialog> optionalDialog = dialogRepo.findById(dialogId);
         if (optionalDialog.filter(dialog -> dialog.getEmployee().getId().equals(employee.getId())).isEmpty()) {
@@ -113,6 +76,6 @@ public class HistoryService {
         questionRepo.save(question);
         Message saved = messageRepo.save(message);
 
-        return messageDtoMapper(saved);
+        return MessageDto.of(saved);
     }
 }
