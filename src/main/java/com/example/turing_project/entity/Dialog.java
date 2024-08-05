@@ -15,8 +15,7 @@ public class Dialog {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
     @Column(nullable = false)

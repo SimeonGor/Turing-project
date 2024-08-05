@@ -14,18 +14,15 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "dialog_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "dialog_id", nullable = false)
     private Dialog dialog;
 
     @OneToOne
-    @JoinColumn(name = "question_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 
     @OneToOne
-    @JoinColumn(name = "answer_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "answer_id", nullable = false)
     private Answer answer;
 
     @Column(nullable = false)

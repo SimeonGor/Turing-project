@@ -1,7 +1,6 @@
 package com.example.turing_project.dto;
 
 import com.example.turing_project.entity.Question;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
