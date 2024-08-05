@@ -5,6 +5,7 @@ import com.example.turing_project.dto.DialogDto;
 import com.example.turing_project.dto.MessageDto;
 import com.example.turing_project.dto.QuestionDto;
 import com.example.turing_project.entity.*;
+import com.example.turing_project.exceptions.ResourceNotFoundException;
 import com.example.turing_project.repo.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,6 @@ public class HistoryService {
     private final AnswerRepo answerRepo;
     private final QuestionRepo questionRepo;
     private final DialogRepo dialogRepo;
-    private final EmployeeRepo employeeRepo;
 
     private MessageDto messageDtoMapper(Message message) {
         return MessageDto.builder()
@@ -64,7 +64,9 @@ public class HistoryService {
         return messageOptional
                 .filter(message -> message.getDialog().getEmployee().getId().equals(employee.getId()))
                 .map(this::messageDtoMapper)
-                .orElse(null);
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Message with id %s not found".formatted(id))
+                );
     }
 
     public List<MessageDto> getDialogById(Employee employee, Long id) {
@@ -73,7 +75,9 @@ public class HistoryService {
                 .filter(dialog -> dialog.getEmployee().getId().equals(employee.getId()))
                 .map(dialog ->
                     dialog.getMessageList().stream().map(this::messageDtoMapper).toList())
-                .orElse(null);
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Dialog with id %s not found".formatted(id))
+                );
     }
 
     public List<DialogDto> getAllDialogs(Employee employee) {
@@ -96,7 +100,7 @@ public class HistoryService {
 
         Optional<Dialog> optionalDialog = dialogRepo.findById(dialogId);
         if (optionalDialog.filter(dialog -> dialog.getEmployee().getId().equals(employee.getId())).isEmpty()) {
-            return null;
+            throw new ResourceNotFoundException("Dialog with id %s not found".formatted(dialogId));
         }
 
         Message message = new Message();

@@ -1,17 +1,15 @@
 package com.example.turing_project.controller;
 
-import com.example.turing_project.dto.AnswerDto;
-import com.example.turing_project.dto.DialogDto;
-import com.example.turing_project.dto.MessageDto;
-import com.example.turing_project.dto.QuestionDto;
+import com.example.turing_project.dto.*;
 import com.example.turing_project.entity.Employee;
+import com.example.turing_project.exceptions.ResourceNotFoundException;
 import com.example.turing_project.service.EmployeeService;
 import com.example.turing_project.service.HistoryService;
 import com.example.turing_project.service.TuringService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,11 +28,7 @@ public class MessagesController {
     @GetMapping("messages/{messageId}")
     public MessageDto getMessage(@PathVariable Long messageId) {
         Employee employee = employeeService.getCurrentEmployee();
-        MessageDto message = historyService.getMessageById(employee, messageId);
-        if (message == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such message id");
-        }
-        return message;
+        return historyService.getMessageById(employee, messageId);
     }
 
     @GetMapping("dialogs")
@@ -46,11 +40,7 @@ public class MessagesController {
     @GetMapping("dialogs/{dialogId}/messages")
     public List<MessageDto> getDialog(@PathVariable Long dialogId) {
         Employee employee = employeeService.getCurrentEmployee();
-        List<MessageDto> messageDtoList = historyService.getDialogById(employee, dialogId);
-        if (messageDtoList == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such dialog id");
-        }
-        return messageDtoList;
+        return historyService.getDialogById(employee, dialogId);
     }
 
     @PostMapping("dialogs/new")
@@ -63,9 +53,13 @@ public class MessagesController {
     public MessageDto sendQuestion(@PathVariable Long dialogId, @RequestBody @Valid QuestionDto question) {
         Employee employee = employeeService.getCurrentEmployee();
         AnswerDto answer = turingService.handle(question.getText());
-
         return historyService.saveMessage(employee, dialogId, question, answer);
     }
 
-
+    @ExceptionHandler
+    public ResponseEntity<ErrorMessage> catchResourceNotFoundException(ResourceNotFoundException e) {
+        return ResponseEntity.
+                status(HttpStatus.NOT_FOUND)
+                .body(ErrorMessage.builder().statusCode(HttpStatus.NOT_FOUND.value()).message(e.getMessage()).build());
+    }
 }
