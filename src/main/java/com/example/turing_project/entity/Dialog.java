@@ -18,8 +18,10 @@ public class Dialog {
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
+    @Column(nullable = false)
     private Employee employee;
 
+    @Column(nullable = false)
     private String title;
 
     @OneToMany

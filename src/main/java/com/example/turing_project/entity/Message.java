@@ -15,15 +15,19 @@ public class Message {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "dialog_id")
+    @Column(nullable = false)
     private Dialog dialog;
 
     @OneToOne
     @JoinColumn(name = "question_id")
+    @Column(nullable = false)
     private Question question;
 
     @OneToOne
     @JoinColumn(name = "answer_id")
+    @Column(nullable = false)
     private Answer answer;
 
+    @Column(nullable = false)
     private LocalDateTime created;
 }
