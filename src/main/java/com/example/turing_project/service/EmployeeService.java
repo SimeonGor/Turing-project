@@ -3,6 +3,9 @@ package com.example.turing_project.service;
 import com.example.turing_project.entity.Employee;
 import com.example.turing_project.repo.EmployeeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -36,6 +39,16 @@ public class EmployeeService {
             throw new RuntimeException("Пользователь с таким именем уже существует");
         }
         return save(employee);
+    }
+
+    public Employee getCurrentEmployee() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails userDetails)) {
+            throw new RuntimeException("User not authenticated");
+
+        }
+        String email = userDetails.getUsername();
+        return getEmployeeByEmail(email);
     }
 
 

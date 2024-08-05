@@ -28,6 +28,7 @@ import java.util.List;
 public class MessagesController {
     private final HistoryService historyService;
     private final TuringService turingService;
+
     @Autowired
     private EmployeeService employeeService;
 
@@ -44,7 +45,8 @@ public class MessagesController {
     @GetMapping("dialogs")
     public List<DialogDto> getAllUserDialogs() {
         // FIXME: 01.08.2024 необходим пользователь
-        return historyService.getAllDialogs(1L);
+        Employee employee = employeeService.getCurrentEmployee();
+        return historyService.getAllDialogs(employee.getId());
     }
 
     @GetMapping("dialogs/{dialogId}/messages")
@@ -70,16 +72,5 @@ public class MessagesController {
         return answer;
     }
 
-    private Employee getCurrentEmployee() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
-            throw new RuntimeException("User not authenticated");
-
-        }
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String email = userDetails.getUsername();
-
-        return employeeService.getEmployeeByEmail(email);
-    }
 
 }
