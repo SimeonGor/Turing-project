@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-@Schema(name = "response form Turing")
+@Schema(description = "response form Turing")
 public class AnswerDto {
     private String text;
     private String document;
