@@ -33,7 +33,8 @@ public class AuthController {
             String token = jwtTokenService.generateToken(employee.getEmail(), employee.getPassword());
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + token);
-            return ResponseEntity.ok().headers(headers).body("Registration successful");
+            return ResponseEntity.ok().headers(headers).body("Registration successful\n" +
+                    "Bearer " + token);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Internal Server Error");
         }
@@ -50,7 +51,8 @@ public class AuthController {
                 String token = jwtTokenService.generateToken(email, password);
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", "Bearer " + token);
-                return ResponseEntity.ok().headers(headers).body("Login successful");
+                return ResponseEntity.ok().headers(headers).body("Login successful\n" +
+                        "Bearer " + token);
             } else {
                 return ResponseEntity.status(401).body("Invalid credentials");
             }
