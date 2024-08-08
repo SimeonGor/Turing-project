@@ -75,6 +75,9 @@ public class HistoryService {
 
         Dialog dialog = optionalDialog.get();
         dialog.setModified(time);
+        if (dialog.getMessageList().isEmpty()) {
+            dialog.setTitle(question.getText());
+        }
 
         Message message = new Message();
         message.setAnswer(answer);
