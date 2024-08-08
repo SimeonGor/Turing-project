@@ -42,42 +42,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        //TODO: Вернуть авторизацию на место 08.08.2024
-        filterChain.doFilter(request, response);
+        String authorizationHeader = request.getHeader("Authorization");
+        String token = null;
 
-//        String authorizationHeader = request.getHeader("Authorization");
-//        String token = null;
-//
-//        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-//            token = authorizationHeader.substring(7);
-//        }
-//
-//        if (token == null || !jwtTokenService.validateToken(token)) {
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.getWriter().write("Unauthorized");
-//            return;
-//        } else {
-//            Claims claims = jwtTokenService.getClaims(token);
-//            String email = claims.get("email").toString();
-//
-//            Employee employee = employeeService.getEmployeeByEmail(email);
-//            if (employee != null) {
-//
-//                UserDetails userDetails = new User(
-//                        employee.getEmail(),
-//                        employee.getPassword(),
-//                        new ArrayList<>()
-//                );
-//
-//                Authentication authentication = new UsernamePasswordAuthenticationToken(
-//                        userDetails,
-//                        null,
-//                        userDetails.getAuthorities()
-//                );
-//                SecurityContextHolder.getContext().setAuthentication(authentication);
-//            }
-//
-//            filterChain.doFilter(request, response);
-//        }
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            token = authorizationHeader.substring(7);
+        }
+
+        if (token == null || !jwtTokenService.validateToken(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Unauthorized");
+            return;
+        } else {
+            Claims claims = jwtTokenService.getClaims(token);
+            String email = claims.get("email").toString();
+
+            Employee employee = employeeService.getEmployeeByEmail(email);
+            if (employee != null) {
+
+                UserDetails userDetails = new User(
+                        employee.getEmail(),
+                        employee.getPassword(),
+                        new ArrayList<>()
+                );
+
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+
+            filterChain.doFilter(request, response);
+        }
     }
 }
