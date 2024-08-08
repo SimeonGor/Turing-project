@@ -31,18 +31,13 @@ public class JwtTokenService {
         if (email == null || password == null)
             return null;
         Map<String, Object> tokenData = new HashMap<>();
-        if (password.equals(password)) {
-            tokenData.put("email", email);
+        tokenData.put("email", email);
+        JwtBuilder jwtBuilder = builder();
+        return jwtBuilder.setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 100000 * 60 * 24))
+                .setClaims(tokenData)
+                .signWith(SignatureAlgorithm.HS256, secretKey).compact();
 
-            JwtBuilder jwtBuilder = builder();
-
-            return jwtBuilder.setIssuedAt(new Date(System.currentTimeMillis()))
-                    .setExpiration(new Date(System.currentTimeMillis() + 100000 * 60 * 24))
-                    .setClaims(tokenData)
-                    .signWith(SignatureAlgorithm.HS256, secretKey).compact();
-        } else {
-            throw new Exception("Authentication error");
-        }
     }
 
     public boolean validateToken(String token) {
@@ -55,12 +50,11 @@ public class JwtTokenService {
     }
 
     public Claims getClaims(String token) {
-        Claims claims = Jwts.parserBuilder()
+        return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims;
     }
 
 }

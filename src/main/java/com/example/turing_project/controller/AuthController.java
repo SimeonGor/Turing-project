@@ -3,6 +3,7 @@ package com.example.turing_project.controller;
 import com.example.turing_project.entity.Employee;
 import com.example.turing_project.service.EmployeeService;
 import com.example.turing_project.service.JwtTokenService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -12,18 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private EmployeeService employeeService;
-
-    @Autowired
-    private JwtTokenService jwtTokenService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final EmployeeService employeeService;
+    private final JwtTokenService jwtTokenService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Employee employee) {
