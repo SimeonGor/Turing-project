@@ -9,6 +9,7 @@ import com.example.turing_project.exceptions.ResourceNotFoundException;
 import com.example.turing_project.repo.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,14 +50,19 @@ public class HistoryService {
     }
 
     public DialogDto createDialog(Employee employee, String title) {
+        LocalDateTime time = LocalDateTime.now();
+
         Dialog dialog = new Dialog();
         dialog.setEmployee(employee);
         dialog.setTitle(title);
+        dialog.setCreated(time);
+        dialog.setModified(time);
 
         Dialog saved = dialogRepo.save(dialog);
         return DialogDto.of(saved);
     }
 
+    @Transactional
     public MessageDto saveMessage(Employee employee, Long dialogId, QuestionDto questionDto, AnswerDto answerDto) {
         Answer answer = answerDto.toAnswer();
         Question question = questionDto.toQuestion();
@@ -65,13 +71,21 @@ public class HistoryService {
         if (optionalDialog.filter(dialog -> dialog.getEmployee().getId().equals(employee.getId())).isEmpty()) {
             throw new ResourceNotFoundException("Dialog with id %s not found".formatted(dialogId));
         }
+        LocalDateTime time = LocalDateTime.now();
+
+        Dialog dialog = optionalDialog.get();
+        dialog.setModified(time);
+        if (dialog.getMessageList().isEmpty()) {
+            dialog.setTitle(question.getText());
+        }
 
         Message message = new Message();
         message.setAnswer(answer);
         message.setQuestion(question);
-        message.setDialog(optionalDialog.get());
-        message.setCreated(LocalDateTime.now());
+        message.setDialog(dialog);
+        message.setCreated(time);
 
+        dialogRepo.save(dialog);
         answerRepo.save(answer);
         questionRepo.save(question);
         Message saved = messageRepo.save(message);
