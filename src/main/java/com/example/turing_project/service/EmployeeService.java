@@ -42,13 +42,15 @@ public class EmployeeService {
     }
 
     public Employee getCurrentEmployee() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails userDetails)) {
-            throw new RuntimeException("User not authenticated");
+        //TODO: Вернуть авторизацию на место 08.08.2024
 
-        }
-        String email = userDetails.getUsername();
-        return getEmployeeByEmail(email);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails userDetails)) {
+//            throw new RuntimeException("User not authenticated");
+//
+//        }
+//        String email = userDetails.getUsername();
+        return getEmployeeByEmail("ca.doe@example.com");
     }
 
 
