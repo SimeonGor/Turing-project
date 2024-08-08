@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -20,6 +21,12 @@ public class Dialog {
 
     @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false)
+    private LocalDateTime created;
+
+    @Column(nullable = false)
+    private LocalDateTime modified;
 
     @OneToMany
     @JoinColumn(name = "dialog_id")
