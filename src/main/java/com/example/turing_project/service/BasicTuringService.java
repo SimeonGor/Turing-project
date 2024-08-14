@@ -1,13 +1,13 @@
 package com.example.turing_project.service;
 
 import com.example.turing_project.dto.AnswerDto;
-import com.example.turing_project.entity.Answer;
-import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
-@Service
-public class BasicTuringServiceImpl implements TuringService {
+@Slf4j
+public class BasicTuringService implements TuringService {
     @Override
     public AnswerDto handle(String request) {
+        log.info("Запрос {} перенаправлен в GigaChat", request);
         return AnswerDto.builder()
                 .text("It's answer to %s".formatted(request))
                 .build();
