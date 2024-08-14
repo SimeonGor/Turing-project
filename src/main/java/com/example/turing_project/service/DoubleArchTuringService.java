@@ -14,7 +14,7 @@ public class DoubleArchTuringService implements TuringService {
     private final DocumentService documentService;
 
     public boolean hasDocumentName(String text) {
-        String regex = "(?://)(.+?)(?://)";
+        String regex = "//(.+?)//";
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(text);
 
