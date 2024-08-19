@@ -30,19 +30,25 @@ public class JwtTokenService {
     public String generateToken(String email, String password) throws Exception {
         if (email == null || password == null)
             return null;
+
         Map<String, Object> tokenData = new HashMap<>();
         tokenData.put("email", email);
-        JwtBuilder jwtBuilder = builder();
-        return jwtBuilder.setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 100000 * 60 * 24))
-                .setClaims(tokenData)
-                .signWith(SignatureAlgorithm.HS256, secretKey).compact();
 
+        // Время истечения срока действия
+        Date expirationDate = new Date(System.currentTimeMillis() + 12 * 60 * 60 * 1000); // 12 часов
+        tokenData.put("expiration", expirationDate);
+
+        JwtBuilder jwtBuilder = builder();
+
+        return jwtBuilder.setClaims(tokenData)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            return getClaims(token) != null;
+            return getClaims(token) != null && !isTokenExpired(token);
         } catch (Exception e) {
             return false;
         }
@@ -55,6 +61,12 @@ public class JwtTokenService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public boolean isTokenExpired(String token) {
+        Claims claims = getClaims(token);
+        Date expirationDate = claims.get("expiration", Date.class);
+        return expirationDate.before(new Date());
     }
 
 }
