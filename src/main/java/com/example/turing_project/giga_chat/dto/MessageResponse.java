@@ -2,7 +2,6 @@ package com.example.turing_project.giga_chat.dto;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 

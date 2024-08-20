@@ -4,8 +4,4 @@ public class InvalidGigaChatRequestException extends RuntimeException {
     public InvalidGigaChatRequestException(String message) {
         super(message);
     }
-
-    public InvalidGigaChatRequestException(String message, Throwable cause) {
-        super(message,  cause);
-    }
 }
