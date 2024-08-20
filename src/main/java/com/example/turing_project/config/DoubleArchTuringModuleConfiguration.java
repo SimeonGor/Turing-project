@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@ConditionalOnProperty(prefix = "turing", name = "enable-double-arch", havingValue = "true")
+@ConditionalOnProperty(prefix = "app.turing", name = "enable-double-arch", havingValue = "true")
 @Configuration
 @EnableConfigurationProperties(TuringModuleProperties.class)
 public class DoubleArchTuringModuleConfiguration {
