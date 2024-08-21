@@ -12,7 +12,8 @@ import java.util.List;
 @Setter
 public class Dialog {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "dialog_id_seq")
+    @SequenceGenerator(name = "dialog_id_seq", sequenceName = "dialog_seq", allocationSize = 1)
     private Long id;
 
     @ManyToOne

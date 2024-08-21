@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 @Setter
 public class Message {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_id_seq")
+    @SequenceGenerator(name = "message_id_seq", sequenceName = "message_seq", allocationSize = 1)
     private Long id;
     @ManyToOne
     @JoinColumn(name = "dialog_id", nullable = false)
