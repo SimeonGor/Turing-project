@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 public class BasicTuringModuleConfiguration {
     @Bean
     public TuringService basicTuringService(LLMInvoker gigaChat) {
+        gigaChat.init();
         return new BasicTuringService(gigaChat);
     }
 
