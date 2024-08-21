@@ -1,6 +1,7 @@
 package com.example.turing_project.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +16,7 @@ public class Answer {
     @Column(nullable = false)
     private String type;
     @Column(nullable = false)
+    @Size(max = 4000)
     private String text;
     private String document;
 }

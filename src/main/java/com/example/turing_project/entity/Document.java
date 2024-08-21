@@ -1,6 +1,7 @@
 package com.example.turing_project.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -24,6 +25,7 @@ public class Document {
     private String name;
 
     @Column(nullable = false)
+    @Size(max = 1000)
     private String path;
 
     @Column(nullable = false)
