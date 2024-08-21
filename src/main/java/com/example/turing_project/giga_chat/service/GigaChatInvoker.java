@@ -12,14 +12,15 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 public class GigaChatInvoker implements LLMInvoker {
     private final String authorizationData;
     private final String scope;
-    private LocalDateTime tokenExpiredAt;
+    private Long tokenExpiresAt;
     private String accessToken;
     private final RestClient restClient;
 
@@ -103,12 +104,12 @@ public class GigaChatInvoker implements LLMInvoker {
             throw new NullResponseException("GigaChat response cannot be null");
         }
         accessToken = "Bearer %s".formatted(tokenResponse.getAccess_token());
-        tokenExpiredAt = tokenResponse.getExpired_at();
+        tokenExpiresAt = tokenResponse.getExpires_at();
 
         log.trace("receive access token");
     }
 
     public boolean isTokenExpired() {
-        return LocalDateTime.now().isAfter(tokenExpiredAt);
+        return tokenExpiresAt == null || System.currentTimeMillis() > tokenExpiresAt;
     }
 }
