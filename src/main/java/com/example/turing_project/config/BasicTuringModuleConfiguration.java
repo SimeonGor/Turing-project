@@ -1,9 +1,11 @@
 package com.example.turing_project.config;
 
 import com.example.turing_project.giga_chat.config.GigaChatProperties;
+import com.example.turing_project.giga_chat.exceptions.InvalidGigaChatRequestException;
 import com.example.turing_project.service.BasicTuringService;
 import com.example.turing_project.giga_chat.service.GigaChatInvoker;
 import com.example.turing_project.service.LLMInvoker;
+import com.example.turing_project.service.MockLLMInvoker;
 import com.example.turing_project.service.TuringService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,12 +18,18 @@ import org.springframework.context.annotation.Configuration;
 public class BasicTuringModuleConfiguration {
     @Bean
     public TuringService basicTuringService(LLMInvoker gigaChat) {
-        gigaChat.init();
         return new BasicTuringService(gigaChat);
     }
 
     @Bean
     public LLMInvoker gigaChat(GigaChatProperties properties) {
-        return new GigaChatInvoker(properties);
+        try {
+            LLMInvoker gigaChat  = new GigaChatInvoker(properties);
+            gigaChat.init();
+            return gigaChat;
+        }
+        catch (InvalidGigaChatRequestException e) {
+            return new MockLLMInvoker();
+        }
     }
 }
