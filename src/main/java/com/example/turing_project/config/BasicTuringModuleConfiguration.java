@@ -28,7 +28,7 @@ public class BasicTuringModuleConfiguration {
             gigaChat.init();
             return gigaChat;
         }
-        catch (InvalidGigaChatRequestException e) {
+        catch (Exception e) {
             return new MockLLMInvoker();
         }
     }
