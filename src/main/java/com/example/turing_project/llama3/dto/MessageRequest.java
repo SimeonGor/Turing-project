@@ -16,7 +16,7 @@ public class MessageRequest {
         private String content;
     }
     @Builder.Default
-    private String model = "llama3";
+    private String model = "llama3.1";
     private List<Message> messages;
     @Builder.Default
     private Boolean stream = false;
