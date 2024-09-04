@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.giga-chat")
 @Data
 public class GigaChatProperties {
+    private boolean enable;
     private String clientId;
     private String scope;
     private String clientSecret;
