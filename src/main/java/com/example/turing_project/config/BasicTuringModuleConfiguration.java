@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 
 @ConditionalOnProperty(prefix = "app.turing", name = "enable-double-arch", havingValue = "false")
 @Configuration
-@EnableConfigurationProperties(LlamaProperties.class)
 public class BasicTuringModuleConfiguration {
     @Bean
     public TuringService basicTuringService(LLMInvoker llmInvoker) {
@@ -26,9 +25,4 @@ public class BasicTuringModuleConfiguration {
 //    public LLMInvoker gigaChat(GigaChatProperties properties) {
 //        return new GigaChatInvoker(properties);
 //    }
-
-    @Bean
-    public LLMInvoker llamaChat(LlamaProperties properties) {
-        return new LlamaInvoker(properties);
-    }
 }

@@ -6,5 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.llama")
 @Data
 public class LlamaProperties {
+    private boolean enable;
     private String url;
 }
