@@ -10,7 +10,7 @@ public class BasicTuringService implements TuringService {
     private LLMInvoker llmInvoker;
     @Override
     public AnswerDto handle(String request) {
-        log.info("Запрос {} перенаправлен в GigaChat", request);
+        log.info("Обработка запроса {}", request);
         String result = llmInvoker.invoke(request);
         return AnswerDto.builder()
                 .text(result)

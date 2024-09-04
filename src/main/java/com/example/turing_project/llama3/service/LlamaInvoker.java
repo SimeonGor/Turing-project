@@ -54,7 +54,7 @@ public class LlamaInvoker implements LLMInvoker {
                 .body(MessageResponse.class);
 
         if (messageResponse == null) {
-            throw new NullResponseException("GigaChat response cannot be null");
+            throw new NullResponseException("Llama response cannot be null");
         }
 
         return messageResponse.getContent();
