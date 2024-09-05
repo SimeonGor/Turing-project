@@ -11,4 +11,6 @@ public class GigaChatProperties {
     private String scope;
     private String clientSecret;
     private String url;
+
+    private Long contextLimits;
 }

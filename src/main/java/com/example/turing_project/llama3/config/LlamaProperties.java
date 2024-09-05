@@ -8,4 +8,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class LlamaProperties {
     private boolean enable;
     private String url;
+    private Long contextLimits;
 }

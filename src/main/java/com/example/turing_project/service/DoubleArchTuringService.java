@@ -1,6 +1,7 @@
 package com.example.turing_project.service;
 
 import com.example.turing_project.dto.AnswerDto;
+import com.example.turing_project.dto.HistoryContext;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +30,14 @@ public class DoubleArchTuringService implements TuringService {
         return false;
     }
 
+    @Override
+    public Long getHistoryContextLimits() {
+        return 0L;
+    }
+
     @SneakyThrows
     @Override
-    public AnswerDto handle(String request) {
+    public AnswerDto handle(String request, HistoryContext historyContext) {
         if (hasDocumentName(request)) {
             log.info("Запрос {} перенаправлен в Lama3", request);
             Thread.sleep(500);
