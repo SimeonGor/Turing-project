@@ -1,9 +1,6 @@
 package com.example.turing_project.service;
 
-import com.example.turing_project.dto.AnswerDto;
-import com.example.turing_project.dto.DialogDto;
-import com.example.turing_project.dto.MessageDto;
-import com.example.turing_project.dto.QuestionDto;
+import com.example.turing_project.dto.*;
 import com.example.turing_project.entity.*;
 import com.example.turing_project.exceptions.ResourceNotFoundException;
 import com.example.turing_project.repo.*;
@@ -91,5 +88,18 @@ public class HistoryService {
         Message saved = messageRepo.save(message);
 
         return MessageDto.of(saved);
+    }
+
+    public HistoryContext getHistoryContext(Employee employee, Long dialogId, Long limits) {
+        Optional<Dialog> optionalDialog = dialogRepo.findById(dialogId);
+        if (optionalDialog.filter(dialog -> dialog.getEmployee().getId().equals(employee.getId())).isEmpty()) {
+            throw new ResourceNotFoundException("Dialog with id %s not found".formatted(dialogId));
+        }
+
+        List<Message> messageList = messageRepo.getContextHistory(dialogId, limits);
+
+        return HistoryContext.builder()
+                .messages(messageList.stream().map(MessageDto::of).toList())
+                .build();
     }
 }

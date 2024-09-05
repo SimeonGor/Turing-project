@@ -64,7 +64,10 @@ public class MessagesController {
     @Operation(summary = "Send new question")
     public MessageDto sendQuestion(@PathVariable Long dialogId, @RequestBody @Valid QuestionDto question) {
         Employee employee = employeeService.getCurrentEmployee();
-        AnswerDto answer = turingService.handle(question.getText());
+        Long historyContextLimits = turingService.getHistoryContextLimits();
+        HistoryContext historyContext = historyService.getHistoryContext(employee, dialogId, historyContextLimits);
+        historyContext.getMessages().forEach(System.out::println);
+        AnswerDto answer = turingService.handle(question.getText(), historyContext);
         return historyService.saveMessage(employee, dialogId, question, answer);
     }
 

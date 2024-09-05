@@ -1,5 +1,6 @@
 package com.example.turing_project.giga_chat.service;
 
+import com.example.turing_project.dto.HistoryContext;
 import com.example.turing_project.giga_chat.config.GigaChatProperties;
 import com.example.turing_project.giga_chat.dto.MessageRequest;
 import com.example.turing_project.giga_chat.dto.MessageResponse;
@@ -23,9 +24,11 @@ public class GigaChatInvoker implements LLMInvoker {
     private Long tokenExpiresAt;
     private String accessToken;
     private final RestClient restClient;
+    private final Long contextLimits;
 
     public GigaChatInvoker(GigaChatProperties properties) {
         this.scope = properties.getScope();
+        this.contextLimits = properties.getContextLimits();
 
         String raw_authorization_data = "%s:%s".formatted(properties.getClientId(), properties.getClientSecret());
 
@@ -43,7 +46,12 @@ public class GigaChatInvoker implements LLMInvoker {
     }
 
     @Override
-    public String invoke(String question) {
+    public Long getHistoryContextLimits() {
+        return contextLimits;
+    }
+
+    @Override
+    public String invoke(String question, HistoryContext historyContext) {
         log.info("send question to GigaChat");
 
         if (isTokenExpired()) {

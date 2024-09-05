@@ -1,5 +1,7 @@
 package com.example.turing_project.service;
 
+import com.example.turing_project.dto.HistoryContext;
+
 public class MockLLMInvoker implements LLMInvoker{
     @Override
     public void init() {
@@ -7,7 +9,12 @@ public class MockLLMInvoker implements LLMInvoker{
     }
 
     @Override
-    public String invoke(String request) {
+    public Long getHistoryContextLimits() {
+        return 0L;
+    }
+
+    @Override
+    public String invoke(String request, HistoryContext historyContext) {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
