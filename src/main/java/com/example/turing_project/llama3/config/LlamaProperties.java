@@ -9,4 +9,5 @@ public class LlamaProperties {
     private boolean enable;
     private String url;
     private Long contextLimits;
+    private String modelName;
 }

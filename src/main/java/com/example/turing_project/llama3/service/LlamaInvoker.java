@@ -19,9 +19,11 @@ import java.util.stream.Stream;
 public class LlamaInvoker implements LLMInvoker {
     private final RestClient restClient;
     private final Long contextLimits;
+    private final String modelName;
 
     public LlamaInvoker(LlamaProperties properties) {
         this.contextLimits = properties.getContextLimits();
+        this.modelName = properties.getModelName();
 
         restClient = RestClient.builder()
                 .baseUrl(properties.getUrl())
@@ -50,6 +52,7 @@ public class LlamaInvoker implements LLMInvoker {
         messages.add(MessageRequest.Message.builder().content(question).build());
 
         MessageRequest requestBody = MessageRequest.builder()
+                .model(modelName)
                 .messages(messages)
                 .build();
 
