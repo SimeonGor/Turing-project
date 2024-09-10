@@ -1,16 +1,12 @@
 package com.example.turing_project.service;
 
-import com.example.turing_project.dto.AnswerDto;
-import com.example.turing_project.dto.DialogDto;
-import com.example.turing_project.dto.MessageDto;
-import com.example.turing_project.dto.QuestionDto;
-import com.example.turing_project.entity.Answer;
-import com.example.turing_project.entity.Dialog;
-import com.example.turing_project.entity.Message;
-import com.example.turing_project.entity.Question;
+import com.example.turing_project.dto.*;
+import com.example.turing_project.entity.*;
+import com.example.turing_project.exceptions.ResourceNotFoundException;
 import com.example.turing_project.repo.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,88 +19,87 @@ public class HistoryService {
     private final AnswerRepo answerRepo;
     private final QuestionRepo questionRepo;
     private final DialogRepo dialogRepo;
-    private final EmployeeRepo employeeRepo;
 
-    private MessageDto messageDtoMapper(Message message) {
-        return MessageDto.builder()
-                .id(message.getId())
-                .created(message.getCreated())
-                .answer(AnswerDto.builder()
-                        .text(message.getAnswer().getText())
-                        .document(message.getAnswer().getDocument())
-                        .build()
-                )
-                .question(QuestionDto.builder()
-                        .text(message.getQuestion().getText())
-                        .build()
-                )
-                .build();
-    }
-
-    private DialogDto dialogDtoMapper(Dialog dialog) {
-        return DialogDto.builder()
-                .id(dialog.getId())
-                .title(dialog.getTitle())
-                .build();
-    }
-
-    private Answer answerMapper(AnswerDto answerDto) {
-        Answer answer = new Answer();
-        answer.setType("text");
-        answer.setDocument(answerDto.getDocument());
-        answer.setText(answerDto.getText());
-        return answer;
-    }
-
-    private Question questionMapper(QuestionDto questionDto) {
-        Question question = new Question();
-        question.setText(questionDto.getText());
-        return question;
-    }
-
-    public MessageDto getMessageById(Long id) {
+    public MessageDto getMessageById(Employee employee, Long id) {
         Optional<Message> messageOptional = messageRepo.findById(id);
         return messageOptional
-                .map(this::messageDtoMapper
-                )
-                .orElse(null);
+                .filter(message -> message.getDialog().getEmployee().getId().equals(employee.getId()))
+                .map(MessageDto::of)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Message with id %s not found".formatted(id))
+                );
     }
 
-    public List<MessageDto> getDialogById(Long id) {
+    public List<MessageDto> getDialogById(Employee employee, Long id) {
         Optional<Dialog> optionalDialog = dialogRepo.findById(id);
         return optionalDialog
+                .filter(dialog -> dialog.getEmployee().getId().equals(employee.getId()))
                 .map(dialog ->
-                    dialog.getMessageList().stream().map(this::messageDtoMapper).toList()
-                ).orElse(null);
+                    dialog.getMessageList().stream().map(MessageDto::of).toList())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Dialog with id %s not found".formatted(id))
+                );
     }
 
-    public List<DialogDto> getAllDialogs(Long userId) {
-        return dialogRepo.findAllByEmployee_Id(userId)
-                .stream().map(this::dialogDtoMapper).toList();
+    public List<DialogDto> getAllDialogs(Employee employee) {
+        return dialogRepo.findAllByEmployee_Id(employee.getId())
+                .stream().map(DialogDto::of).toList();
     }
 
-    // TODO: 01.08.2024 change userId to employee
-    public DialogDto createDialog(Long userId, String title) {
+    public DialogDto createDialog(Employee employee, String title) {
+        LocalDateTime time = LocalDateTime.now();
+
         Dialog dialog = new Dialog();
-        dialog.setEmployee(employeeRepo.findById(userId).get());
+        dialog.setEmployee(employee);
         dialog.setTitle(title);
+        dialog.setCreated(time);
+        dialog.setModified(time);
 
         Dialog saved = dialogRepo.save(dialog);
-        return dialogDtoMapper(saved);
+        return DialogDto.of(saved);
     }
 
-    public void saveMessage(Long dialogId, QuestionDto questionDto, AnswerDto answerDto) {
-        Answer answer = answerMapper(answerDto);
-        Question question = questionMapper(questionDto);
+    @Transactional
+    public MessageDto saveMessage(Employee employee, Long dialogId, QuestionDto questionDto, AnswerDto answerDto) {
+        Answer answer = answerDto.toAnswer();
+        Question question = questionDto.toQuestion();
+
+        Optional<Dialog> optionalDialog = dialogRepo.findById(dialogId);
+        if (optionalDialog.filter(dialog -> dialog.getEmployee().getId().equals(employee.getId())).isEmpty()) {
+            throw new ResourceNotFoundException("Dialog with id %s not found".formatted(dialogId));
+        }
+        LocalDateTime time = LocalDateTime.now();
+
+        Dialog dialog = optionalDialog.get();
+        dialog.setModified(time);
+        if (dialog.getMessageList().isEmpty()) {
+            dialog.setTitle(question.getText());
+        }
 
         Message message = new Message();
         message.setAnswer(answer);
         message.setQuestion(question);
-        message.setDialog(dialogRepo.findById(dialogId).get());
-        message.setCreated(LocalDateTime.now());
+        message.setDialog(dialog);
+        message.setCreated(time);
 
+        dialogRepo.save(dialog);
         answerRepo.save(answer);
         questionRepo.save(question);
-        messageRepo.save(message);
+        Message saved = messageRepo.save(message);
+
+        return MessageDto.of(saved);
+    }
+
+    public HistoryContext getHistoryContext(Employee employee, Long dialogId, Long limits) {
+        Optional<Dialog> optionalDialog = dialogRepo.findById(dialogId);
+        if (optionalDialog.filter(dialog -> dialog.getEmployee().getId().equals(employee.getId())).isEmpty()) {
+            throw new ResourceNotFoundException("Dialog with id %s not found".formatted(dialogId));
+        }
+
+        List<Message> messageList = messageRepo.getContextHistory(dialogId, limits);
+
+        return HistoryContext.builder()
+                .messages(messageList.stream().map(MessageDto::of).toList())
+                .build();
     }
 }

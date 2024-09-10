@@ -3,7 +3,9 @@ package com.example.turing_project.controller;
 import com.example.turing_project.entity.Employee;
 import com.example.turing_project.service.EmployeeService;
 import com.example.turing_project.service.JwtTokenService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -11,27 +13,32 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private EmployeeService employeeService;
-
-    @Autowired
-    private JwtTokenService jwtTokenService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final EmployeeService employeeService;
+    private final JwtTokenService jwtTokenService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Employee employee) {
-        if (employeeService.getEmployeeByEmail(employee.getEmail())!=null){
+        if (employeeService.getEmployeeByEmail(employee.getEmail()) != null) {
             return ResponseEntity.status(409).body("Conflict");
         }
         employee.setPassword(passwordEncoder.encode(employee.getPassword()));
         employeeService.save(employee);
-        return ResponseEntity.ok("Registration successful");
+        try {
+            String token = jwtTokenService.generateToken(employee.getEmail(), employee.getPassword());
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            HashMap<String, String> response = new HashMap<>();
+            response.put("token", "Bearer " + token);
+            return ResponseEntity.ok().headers(headers).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Internal Server Error");
+        }
     }
 
     @PostMapping("/login")
@@ -41,13 +48,13 @@ public class AuthController {
             String password = loginData.get("password");
             Employee employee = employeeService.getEmployeeByEmail(email);
 
-            // Проверка пароля
             if (employee != null && passwordEncoder.matches(password, employee.getPassword())) {
-                // Генерация токена
                 String token = jwtTokenService.generateToken(email, password);
-                Map<String, String> response = new HashMap<>();
-                response.put("token", token);
-                return ResponseEntity.ok(response);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Bearer " + token);
+                HashMap<String, String> response = new HashMap<>();
+                response.put("token", "Bearer " + token);
+                return ResponseEntity.ok().headers(headers).body(response);
             } else {
                 return ResponseEntity.status(401).body("Invalid credentials");
             }
@@ -56,5 +63,12 @@ public class AuthController {
         }
     }
 
+}
 
+class AuthResponse {
+    String token;
+
+    public AuthResponse(String token) {
+        this.token = token;
+    }
 }

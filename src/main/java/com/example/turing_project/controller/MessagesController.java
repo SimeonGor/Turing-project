@@ -1,63 +1,80 @@
 package com.example.turing_project.controller;
 
-import com.example.turing_project.dto.AnswerDto;
-import com.example.turing_project.dto.DialogDto;
-import com.example.turing_project.dto.MessageDto;
-import com.example.turing_project.dto.QuestionDto;
+import com.example.turing_project.dto.*;
+import com.example.turing_project.entity.Employee;
+import com.example.turing_project.exceptions.ResourceNotFoundException;
+import com.example.turing_project.service.EmployeeService;
 import com.example.turing_project.service.HistoryService;
 import com.example.turing_project.service.TuringService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-// TODO: 01.08.2024 необходима проверка принадлежности к пользователю
 @AllArgsConstructor
 @RestController
 @RequestMapping("/turing")
+@Tag(name = "Messaging", description = "message sending controller")
 public class MessagesController {
     private final HistoryService historyService;
     private final TuringService turingService;
+    private final EmployeeService employeeService;
 
     @GetMapping("messages/{messageId}")
+    @SecurityRequirement(name = "JWT")
+    @Operation(summary = "Get message by id")
     public MessageDto getMessage(@PathVariable Long messageId) {
-        MessageDto message = historyService.getMessageById(messageId);
-        if (message == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such message id");
-        }
-        return message;
+        Employee employee = employeeService.getCurrentEmployee();
+        return historyService.getMessageById(employee, messageId);
     }
 
     @GetMapping("dialogs")
+    @SecurityRequirement(name = "JWT")
+    @Operation(summary = "Get all user dialogs")
     public List<DialogDto> getAllUserDialogs() {
-        // FIXME: 01.08.2024 необходим пользователь
-        return historyService.getAllDialogs(1L);
+        Employee employee = employeeService.getCurrentEmployee();
+        return historyService.getAllDialogs(employee);
     }
 
     @GetMapping("dialogs/{dialogId}/messages")
+    @SecurityRequirement(name = "JWT")
+    @Operation(summary = "Get dialog by id")
     public List<MessageDto> getDialog(@PathVariable Long dialogId) {
-        List<MessageDto> messageDtoList = historyService.getDialogById(dialogId);
-        if (messageDtoList == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such dialog id");
-        }
-        return messageDtoList;
+        Employee employee = employeeService.getCurrentEmployee();
+        return historyService.getDialogById(employee, dialogId);
     }
 
     @PostMapping("dialogs/new")
-    public DialogDto startNewDialog() {
-        return historyService.createDialog(1L, "New dialog %s".formatted(LocalDateTime.now().toString()));
+    @SecurityRequirement(name = "JWT")
+    @Operation(summary ="Create new dialog")
+    public DialogDto createNewDialog() {
+        Employee employee = employeeService.getCurrentEmployee();
+        return historyService.createDialog(employee, "New dialog %s".formatted(LocalDateTime.now().toString()));
     }
 
     @PostMapping("dialogs/{dialogId}/send")
-    public AnswerDto sendQuestion(@PathVariable Long dialogId, @RequestBody @Valid QuestionDto question) {
-        System.out.println(question.getText());
-        AnswerDto answer = turingService.handle(question.getText());
-        historyService.saveMessage(dialogId, question, answer);
+    @SecurityRequirement(name = "JWT")
+    @Operation(summary = "Send new question")
+    public MessageDto sendQuestion(@PathVariable Long dialogId, @RequestBody @Valid QuestionDto question) {
+        Employee employee = employeeService.getCurrentEmployee();
+        Long historyContextLimits = turingService.getHistoryContextLimits();
+        HistoryContext historyContext = historyService.getHistoryContext(employee, dialogId, historyContextLimits);
+        historyContext.getMessages().forEach(System.out::println);
+        AnswerDto answer = turingService.handle(question.getText(), historyContext);
+        return historyService.saveMessage(employee, dialogId, question, answer);
+    }
 
-        return answer;
+    @ExceptionHandler
+    public ResponseEntity<ErrorMessage> catchResourceNotFoundException(ResourceNotFoundException e) {
+        return ResponseEntity.
+                status(HttpStatus.NOT_FOUND)
+                .body(ErrorMessage.builder().statusCode(HttpStatus.NOT_FOUND.value()).message(e.getMessage()).build());
     }
 }

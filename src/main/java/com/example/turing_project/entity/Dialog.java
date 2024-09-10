@@ -1,11 +1,10 @@
 package com.example.turing_project.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -13,14 +12,22 @@ import java.util.List;
 @Setter
 public class Dialog {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "dialog_id_seq")
+    @SequenceGenerator(name = "dialog_id_seq", sequenceName = "dialog_seq", allocationSize = 1)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id")
+    @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
+    @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false)
+    private LocalDateTime created;
+
+    @Column(nullable = false)
+    private LocalDateTime modified;
 
     @OneToMany
     @JoinColumn(name = "dialog_id")
