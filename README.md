@@ -2,12 +2,25 @@
 1. Клонирование репозитория
 2. Создание переменных окружения
 
-```export GIGACHAT_CLIENT_ID=<client-id>```
+```export DB_USER=<username>```
 
-```export GIGACHAT_CLIENT_SECRET=<client-secret>```
+```export DB_PASSWORD=<password>```
 
-3. Запусить Spring
-```mvnw spring-boot:run```
+```export GIGACHAT_CLIENT_ID=<client-id>``` (при использовании GigaChat)
+
+```export GIGACHAT_CLIENT_SECRET=<client-secret>``` (при использовании GigaChat)
+
+3. Изменить свойства в файле ```application.properties```
+
+   ```spring.datasource.url=<db_url>```
+
+   ```app.llama.url=<llama_url>```
+
+4. Построить проект
+
+    ```mvn package ```
+
+    ```java -jar target/Turing_project-*.*.*-SNAPSHOT.jar```
 
 ## Зависимости
 Java17
